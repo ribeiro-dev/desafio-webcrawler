@@ -1,4 +1,5 @@
-﻿using webcrawler.Utils;
+﻿using webcrawler.Services;
+using webcrawler.Utils;
 
 // Getting html
 
@@ -11,15 +12,11 @@ var response = await client.GetStringAsync(baseUrl);
 List<string> pagesURL = [];
 try {
   pagesURL = PageHelper.GeneratePagesUrl(baseUrl, response);
-
+  WebCrawler webCrawler = new WebCrawler(pagesURL[0]);
+  string title = await webCrawler.ScrapeContentAsync();
+  Console.WriteLine(title);
 }
 catch (Exception ex) {
 
   Console.WriteLine($"Falha na execução: {ex.Message}"); ;
 }
-
-foreach (var url in pagesURL)
-{
-  Console.WriteLine(url);
-}
-
