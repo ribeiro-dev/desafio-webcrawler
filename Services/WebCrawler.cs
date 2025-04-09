@@ -9,7 +9,7 @@ public class WebCrawler(string url)
 {
   private readonly string _url = url;
 
-  public Task<List<Dictionary<string, string>>> ScrapeContentAsync()
+  public void ScrapeContent()
   {
     var options = new ChromeOptions();
     options.AddArgument("--headless");
@@ -59,7 +59,6 @@ public class WebCrawler(string url)
 
     SavePageHtml($"page_{pageNumber}", pageSource);
     Console.WriteLine("Fim de execucao na URL: " + _url);
-    return Task.FromResult(pageContent);
   }
 
   private void SavePageHtml(string fileName, string fileContent) {
