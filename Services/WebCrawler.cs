@@ -53,10 +53,16 @@ public class WebCrawler(string url)
       pageContent.Add(data);
     }
 
-
-    string title = driver.Title;
+    string pageSource = driver.PageSource;
+    char pageNumber = _url[^1];
     driver.Close();
+
+    SavePageHtml($"page_{pageNumber}", pageSource);
     Console.WriteLine("Fim de execucao na URL: " + _url);
     return Task.FromResult(pageContent);
+  }
+
+  private void SavePageHtml(string fileName, string fileContent) {
+    File.WriteAllText($"files/{fileName}.html", fileContent);
   }
 }
