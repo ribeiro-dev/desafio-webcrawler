@@ -2,24 +2,30 @@
 using webcrawler.Utils;
 
 // Getting html
-
 HttpClient client = new HttpClient();
 string baseUrl = "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc";
 var response = await client.GetStringAsync(baseUrl);
 
 
-List<string> pagesURLs = [
-  "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc/page/1",
-  "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc/page/2",
-  "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc/page/3"
-];
-
 try {
-  // List<string> pagesURL = PageHelper.GeneratePagesUrl(baseUrl, response);
-  var tasks = pagesURLs.Select(url => Task.Run(() =>
+  int maxThreads = 3;
+  var semaphore = new SemaphoreSlim(maxThreads);
+  var random = new Random();
+
+  List<string> pagesURLs = PageHelper.GeneratePagesUrl(baseUrl, response);
+  var tasks = pagesURLs.Select(url => Task.Run(async () =>
   {
-    WebCrawler webCrawler = new WebCrawler(url);
-    webCrawler.ScrapeContent();
+    try {
+      await Task.Delay(random.Next(500, 1500)); // prevents being blocked
+      await semaphore.WaitAsync();
+
+      WebCrawler webCrawler = new WebCrawler(url);
+      webCrawler.ScrapeContent();
+    }
+    finally {
+      semaphore.Release();
+    }
+
   }));
   await Task.WhenAll(tasks);
 }
