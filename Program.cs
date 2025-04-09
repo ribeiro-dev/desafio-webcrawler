@@ -1,4 +1,4 @@
-﻿using HtmlAgilityPack;
+﻿using webcrawler.Utils;
 
 // Getting html
 
@@ -8,18 +8,18 @@ var response = await client.GetStringAsync(baseUrl);
 
 
 // Generating pages url
-
-HtmlDocument htmlDoc = new HtmlDocument();
-htmlDoc.LoadHtml(response);
-
-var lastPageLink = htmlDoc.DocumentNode.SelectNodes("//a[contains(@class, 'page-link')]").Last();
-int pagesCount = int.Parse(lastPageLink.InnerText);
-
 List<string> pagesURL = [];
-for (int i = 1; i <= pagesCount; i++)
+try {
+  pagesURL = PageHelper.GeneratePagesUrl(baseUrl, response);
+
+}
+catch (Exception ex) {
+
+  Console.WriteLine($"Falha na execução: {ex.Message}"); ;
+}
+
+foreach (var url in pagesURL)
 {
-  string fullURL = $"{baseUrl}/page/{i}";
-  pagesURL.Add(fullURL);
-  Console.WriteLine(fullURL);
+  Console.WriteLine(url);
 }
 
