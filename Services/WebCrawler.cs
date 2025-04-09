@@ -13,7 +13,9 @@ public class WebCrawler(string url)
   {
     var options = new ChromeOptions();
     options.AddArgument("--headless");
-    using IWebDriver driver = new ChromeDriver(options);
+    var service = ChromeDriverService.CreateDefaultService();
+    service.SuppressInitialDiagnosticInformation = true; // hides "Only local connections" message
+    using IWebDriver driver = new ChromeDriver(service, options);
     driver.Navigate().GoToUrl(_url);
 
     // waits page full load
