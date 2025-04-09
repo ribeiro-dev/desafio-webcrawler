@@ -54,7 +54,7 @@ public class WebCrawler(string url)
     }
 
     string pageSource = driver.PageSource;
-    char pageNumber = _url[^1];
+    string pageNumber = _url.Split('/')[^1];
     driver.Close();
 
     SavePageHtml($"page_{pageNumber}", pageSource);
