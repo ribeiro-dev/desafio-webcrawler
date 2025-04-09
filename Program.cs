@@ -8,17 +8,20 @@ string baseUrl = "https://proxyservers.pro/proxy/list/order/updated/order_dir/de
 var response = await client.GetStringAsync(baseUrl);
 
 
-try {
-  List<string> pagesURL = PageHelper.GeneratePagesUrl(baseUrl, response);
-  WebCrawler webCrawler = new WebCrawler(pagesURL[0]);
-  List<Dictionary<string, string>> extractedContent = await webCrawler.ScrapeContentAsync();
+List<string> pagesURLs = [
+  "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc/page/1",
+  "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc/page/2",
+  "https://proxyservers.pro/proxy/list/order/updated/order_dir/desc/page/3"
+];
 
-  foreach (var item in extractedContent)
+try {
+  // List<string> pagesURL = PageHelper.GeneratePagesUrl(baseUrl, response);
+  var tasks = pagesURLs.Select(url => Task.Run(() =>
   {
-    Console.WriteLine(item["ip"]);
-    Console.WriteLine(item["port"]);
-    Console.WriteLine();
-  }
+    WebCrawler webCrawler = new WebCrawler(url);
+    webCrawler.ScrapeContent();
+  }));
+  await Task.WhenAll(tasks);
 }
 catch (Exception ex) {
 
