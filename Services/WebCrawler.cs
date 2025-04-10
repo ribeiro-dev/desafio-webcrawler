@@ -2,6 +2,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using webcrawler.Enums;
+using Proxy = webcrawler.Models.Proxy;
 
 namespace webcrawler.Services;
 
@@ -9,8 +10,9 @@ public class WebCrawler(string url)
 {
   private readonly string _url = url;
 
-  public void ScrapeContent()
+  public List<Proxy> ScrapeContent()
   {
+    // starts and configure the driver
     var options = new ChromeOptions();
     options.AddArgument("--headless");
     var service = ChromeDriverService.CreateDefaultService();
@@ -19,7 +21,7 @@ public class WebCrawler(string url)
     driver.Navigate().GoToUrl(_url);
 
     // waits page full load
-    TimeSpan timeout =  TimeSpan.FromSeconds(30);
+    TimeSpan timeout =  TimeSpan.FromSeconds(120);
     var wait = new WebDriverWait(driver, timeout);
     wait.Until(d =>
       {
@@ -34,22 +36,17 @@ public class WebCrawler(string url)
     IReadOnlyCollection<IWebElement> tableRows = tableNode.FindElements(By.XPath("./tbody/tr"));
 
     // extracting the data
-    List<Dictionary<string, string>> pageContent = [];
+    List<Proxy> pageContent = [];
     foreach (IWebElement row in tableRows)
     {
       IReadOnlyCollection<IWebElement> rowData = row.FindElements(By.XPath(("./td")));
 
-      string ip       = rowData.ElementAt((int)ColumnIndex.Ip).Text.Trim();
-      string port     = rowData.ElementAt((int)ColumnIndex.Port).Text.Trim();
-      string country  = rowData.ElementAt((int)ColumnIndex.Country).Text.Trim();
-      string protocol = rowData.ElementAt((int)ColumnIndex.Protocol).Text.Trim();
-
-      Dictionary<string, string> data = new()
+      Proxy data = new()
       {
-        { "ip", ip },
-        { "port", port },
-        { "country", country },
-        { "protocol", protocol }
+        Ip        = rowData.ElementAt((int)ColumnIndex.Ip).Text.Trim(),
+        Port      = rowData.ElementAt((int)ColumnIndex.Port).Text.Trim(),
+        Country   = rowData.ElementAt((int)ColumnIndex.Country).Text.Trim(),
+        Protocol  = rowData.ElementAt((int)ColumnIndex.Protocol).Text.Trim()
       };
 
       pageContent.Add(data);
@@ -61,6 +58,7 @@ public class WebCrawler(string url)
 
     SavePageHtml($"page_{pageNumber}", pageSource);
     Console.WriteLine("Fim de execucao na URL: " + _url);
+    return pageContent;
   }
 
   private void SavePageHtml(string fileName, string fileContent) {
