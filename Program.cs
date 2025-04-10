@@ -1,4 +1,5 @@
-﻿using webcrawler.Services;
+﻿using webcrawler.Models;
+using webcrawler.Services;
 using webcrawler.Utils;
 
 // Getting html
@@ -20,14 +21,19 @@ try {
       await semaphore.WaitAsync();
 
       WebCrawler webCrawler = new WebCrawler(url);
-      webCrawler.ScrapeContent();
+      return webCrawler.ScrapeContent();
     }
     finally {
       semaphore.Release();
     }
 
   }));
-  await Task.WhenAll(tasks);
+
+  // on tasks complete
+  List<Proxy>[] results = await Task.WhenAll(tasks);
+  List<Proxy> pagesContent = results.SelectMany(x => x).ToList();
+
+  FileHelper.CreateJson(pagesContent, "files/proxies_data");
 }
 catch (Exception ex) {
 
